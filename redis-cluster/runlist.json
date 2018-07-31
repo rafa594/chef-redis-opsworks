@@ -1,0 +1,8 @@
+{
+    "run_list":[
+      "recipe[redis-cluster::default]",
+      "recipe[redis-cluster::slaves]",
+      "recipe[redis-cluster::sentinel]"
+    ]
+  }
+  
