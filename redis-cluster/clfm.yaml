@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 key pair to enable SSH access to the instances
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+    Default: kp-lramirez
+  ServiceRole:
+    Default: aws-opsworks-service-role
+    Description: The OpsWorks service role
+    Type: String
+  InstanceRole:
+    Default: aws-opsworks-ec2-role
+    Description: The OpsWorks instance role
+    Type: String
+Resources:
+################################################################################
+#                             Security Group
+################################################################################
+  SecurityGroupOpsWorks:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Security Group para SSH y Redis
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          CidrIp: 0.0.0.0/0
+          FromPort: '22'
+          ToPort: '22'
+        - IpProtocol: tcp
+          CidrIp: 0.0.0.0/0
+          FromPort: '6379'
+          ToPort: '6379'
+
+################################################################################
+#                             OpsWorks Stack
+################################################################################
+  myStack:
+    Type: 'AWS::OpsWorks::Stack'
+    Properties:
+      Name: OpsWorks-lramirez
+      ServiceRoleArn: !Join
+        - ''
+        - - 'arn:aws:iam::'
+          - !Ref 'AWS::AccountId'
+          - ':role/'
+          - !Ref ServiceRole
+      DefaultInstanceProfileArn: !Join
+        - ''
+        - - 'arn:aws:iam::'
+          - !Ref 'AWS::AccountId'
+          - ':instance-profile/'
+          - !Ref InstanceRole
+      UseCustomCookbooks: 'true'
+      ConfigurationManager: {
+        "Name": "Chef",
+        "Version": "12"
+      }
+      DefaultSshKeyName: !Ref KeyName
+      DefaultOs: "Ubuntu 16.04 LTS"
+      CustomCookbooksSource:
+        Type: git
+        Url: 'https://github.com/lermquilerm/redis-cluster-cookbook.git'
+################################################################################
+#                             Layers
+################################################################################
+  LayerMaster:
+    Type: AWS::OpsWorks::Layer
+    Properties:
+      StackId: !Ref myStack
+      Type: custom
+      CustomSecurityGroupIds:
+        - !GetAtt SecurityGroupOpsWorks.GroupId
+      Shortname: redis-master
+      EnableAutoHealing: 'true'
+      AutoAssignElasticIps: 'false'
+      AutoAssignPublicIps: 'true'
+      Name: redismaster
+      CustomRecipes:
+        Setup:
+          - 'redis::default'
+        Configure:
+          - 'redis::master'
+
+  LayerSlave:
+    Type: AWS::OpsWorks::Layer
+    Properties:
+      StackId: !Ref myStack
+      Type: custom
+      CustomSecurityGroupIds:
+        - !GetAtt SecurityGroupOpsWorks.GroupId
+      Shortname: redis-slave
+      EnableAutoHealing: 'true'
+      AutoAssignElasticIps: 'false'
+      AutoAssignPublicIps: 'true'
+      Name: redisslave
+      CustomRecipes:
+        Setup:
+          - 'redis::default'
+        Configure:
+          - 'redis::slave'
+
+  LayerSentinel:
+    Type: AWS::OpsWorks::Layer
+    Properties:
+      StackId: !Ref myStack
+      Type: custom
+      CustomSecurityGroupIds:
+        - !GetAtt SecurityGroupOpsWorks.GroupId
+      Shortname: redis-sentinal
+      EnableAutoHealing: 'true'
+      AutoAssignElasticIps: 'false'
+      AutoAssignPublicIps: 'true'
+      Name: redissentinel
+      CustomRecipes:
+        Setup:
+          - 'redis::default'
+        Configure:
+          - 'redis::sentinel'
+################################################################################
+#                           Instance
+################################################################################
+  # myAppInstance1:
+  #   Type: 'AWS::OpsWorks::Instance'
+  #   Properties:
+  #     StackId: !Ref myStack
+  #     LayerIds:
+  #       - !Ref myLayer
+  #     InstanceType: t1.micro
