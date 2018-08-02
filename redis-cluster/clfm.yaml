@@ -124,7 +124,7 @@ Resources:
       StackId: !Ref RedisStack
       LayerIds: 
         - Ref: "MasterLayer"
-      InstanceType: "t2.micro"
+      InstanceType: "m1.small"
       Hostname: "redishost"
 
   SlaveInstanceA: 
@@ -133,7 +133,7 @@ Resources:
       StackId: !Ref RedisStack
       LayerIds: 
         - Ref: "SlaveLayer"
-      InstanceType: "t2.micro"
+      InstanceType: "m1.small"
       Hostname: "redisslavea"
 
   
