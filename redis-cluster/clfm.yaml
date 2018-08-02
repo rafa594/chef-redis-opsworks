@@ -77,7 +77,7 @@ Resources:
         Setup:
           - 'redis-cluster::default'
         Configure:
-          - 'redis-cluster::master'
+          - 'redis-cluster::config'
 
   SlaveLayer:
     Type: AWS::OpsWorks::Layer
@@ -96,6 +96,7 @@ Resources:
           - 'redis-cluster::default'
         Configure:
           - 'redis-cluster::slave'
+          - 'redis-cluster::sentinel'
 
   SentinelLayer:
     Type: AWS::OpsWorks::Layer
