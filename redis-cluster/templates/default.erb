@@ -8,8 +8,8 @@ pidfile <%= @redis[:pid_file] %>
 port <%= @redis_server[:port] %>
 
 # specified all the interfaces will listen for connections.
-bind <%= @redis_server[:addr] %>
-
+#bind <%= @redis_server[:addr] %>
+protected-mode no
 # Close the connection after a client is idle for N seconds.
 timeout <%= @redis_server[:timeout] %>
 
