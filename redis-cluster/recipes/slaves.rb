@@ -14,7 +14,7 @@ node.default[:redis][:master_server] = "#{instance['private_ip']}"
 
 node.default[:redis][:slave] = "yes"
 node.default[:redis][:pid_file] = "/var/run/redis.pid"
-node.default[:redis][:server][:port] = port
+
 node.default[:redis][:log_dir] = "/var/log/redis"
 node.default[:redis][:data_dir] = "/var/lib/redis"
 
