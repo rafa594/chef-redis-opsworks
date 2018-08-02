@@ -6,7 +6,7 @@
 
 
 
-priority = 100
+
 instance = search("aws_opsworks_instance", "hostname:redishost").first
 node.default[:redis][:master_server] = "#{instance['private_ip']}"
 #port = default[:redis][:slaves][:port]

@@ -1,16 +1,12 @@
 daemonize yes
-
-<% if @sentinel_port > 0 %>
-port <%= @sentinel_port %>
-<% end %>
-sentinel monitor <%= @master_name %> <%= @redis[:master_server] %> <%= @port %> 1
+sentinel monitor <%= @master_name %> <%= @ma %> <%= @redis[:server][:port] %> 1
 sentinel down-after-milliseconds <%= @master_name %> 5000
 sentinel config-epoch <%= @master_name %> 4
 sentinel leader-epoch <%= @master_name %> 6
 
-<% @redis[:ports].each do |portnew| %>
-    sentinel known-slave <%= @master_name %> <%= @redis[:master_server] %> <%= " #{portnew}" %>
-<% end %>
+
+sentinel known-slave <%= @master_name %> <%= @sla %> <%= @redis[:slaves][:port] %>
+
 
 sentinel failover-timeout <%= @master_name %> 1000
 sentinel current-epoch 6

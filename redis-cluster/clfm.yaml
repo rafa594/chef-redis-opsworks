@@ -116,13 +116,7 @@ Resources:
           - 'redis-cluster::sentinel'
 
 
-  # myAppInstance1:
-  #   Type: 'AWS::OpsWorks::Instance'
-  #   Properties:
-  #     StackId: !Ref myStack
-  #     LayerIds:
-  #       - !Ref myLayer
-  #     InstanceType: t1.micro
+
 
   HostInstance: 
     Type: "AWS::OpsWorks::Instance"
@@ -141,3 +135,5 @@ Resources:
         - Ref: "SlaveLayer"
       InstanceType: "t2.micro"
       Hostname: "redisslavea"
+
+  
