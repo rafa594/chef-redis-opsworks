@@ -22,7 +22,7 @@ template "#{node[:redis][:conf_dir]}/sentinel.conf" do
   owner         "root"
   group         "root"
   mode          "0644"
-  variables     :sentinel_port => node[:sentinel][:sentinel_port], :master_name => node[:sentinel][:master_name], :redis => node[:redis], :ma = masteradress, :sla = slaveaddress
+  variables     :sentinel_port => node[:sentinel][:sentinel_port], :master_name => node[:sentinel][:master_name], :redis => node[:redis], :ma => masteradress, :sla => slaveaddress
 end
 
 execute 'redis-sentinel-run' do

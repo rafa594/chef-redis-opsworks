@@ -95,7 +95,7 @@ Resources:
         Setup:
           - 'redis-cluster::default'
         Configure:
-          - 'redis-cluster::slave'
+          - 'redis-cluster::slaves'
           - 'redis-cluster::sentinel'
 
   SentinelLayer:
