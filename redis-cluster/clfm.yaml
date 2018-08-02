@@ -4,7 +4,7 @@ Parameters:
     Description: Name of an existing EC2 key pair to enable SSH access to the instances
     Type: 'AWS::EC2::KeyPair::KeyName'
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
-    Default: kp-lramirez
+    Default: kp_rtut
   ServiceRole:
     Default: aws-opsworks-service-role
     Description: The OpsWorks service role
@@ -14,10 +14,8 @@ Parameters:
     Description: The OpsWorks instance role
     Type: String
 Resources:
-################################################################################
-#                             Security Group
-################################################################################
-  SecurityGroupOpsWorks:
+
+  SecurityGroupOW:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: Security Group para SSH y Redis
@@ -34,10 +32,10 @@ Resources:
 
 #                             OpsWorks Stack
 
-  myStack:
+  RedisStack:
     Type: 'AWS::OpsWorks::Stack'
     Properties:
-      Name: OpsWorks-lramirez
+      Name: opsworks-rtut-stack
       ServiceRoleArn: !Join
         - ''
         - - 'arn:aws:iam::'
@@ -59,66 +57,65 @@ Resources:
       DefaultOs: "Ubuntu 16.04 LTS"
       CustomCookbooksSource:
         Type: git
-        Url: 'https://github.com/lermquilerm/redis-cluster-cookbook.git'
-################################################################################
-#                             Layers
-################################################################################
-  LayerMaster:
+        Url: 'https://github.com/rafa594/chef-redis-opsworks.git'
+
+
+
+  MasterLayer:
     Type: AWS::OpsWorks::Layer
     Properties:
-      StackId: !Ref myStack
+      StackId: !Ref RedisStack
       Type: custom
       CustomSecurityGroupIds:
-        - !GetAtt SecurityGroupOpsWorks.GroupId
-      Shortname: redis-master
+        - !GetAtt SecurityGroupOW.GroupId
+      Shortname: redis-m
       EnableAutoHealing: 'true'
       AutoAssignElasticIps: 'false'
       AutoAssignPublicIps: 'true'
-      Name: redismaster
+      Name: redishostmaster
       CustomRecipes:
         Setup:
-          - 'redis::default'
+          - 'redis-cluster::default'
         Configure:
-          - 'redis::master'
+          - 'redis-cluster::master'
 
-  LayerSlave:
+  SlaveLayer:
     Type: AWS::OpsWorks::Layer
     Properties:
-      StackId: !Ref myStack
+      StackId: !Ref RedisStack
       Type: custom
       CustomSecurityGroupIds:
-        - !GetAtt SecurityGroupOpsWorks.GroupId
-      Shortname: redis-slave
+        - !GetAtt SecurityGroupOW.GroupId
+      Shortname: redis-sl
       EnableAutoHealing: 'true'
       AutoAssignElasticIps: 'false'
       AutoAssignPublicIps: 'true'
-      Name: redisslave
+      Name: redisslaves
       CustomRecipes:
         Setup:
-          - 'redis::default'
+          - 'redis-cluster::default'
         Configure:
-          - 'redis::slave'
+          - 'redis-cluster::slave'
 
-  LayerSentinel:
+  SentinelLayer:
     Type: AWS::OpsWorks::Layer
     Properties:
-      StackId: !Ref myStack
+      StackId: !Ref RedisStack
       Type: custom
       CustomSecurityGroupIds:
-        - !GetAtt SecurityGroupOpsWorks.GroupId
-      Shortname: redis-sentinal
+        - !GetAtt SecurityGroupOW.GroupId
+      Shortname: redis-sn
       EnableAutoHealing: 'true'
       AutoAssignElasticIps: 'false'
       AutoAssignPublicIps: 'true'
       Name: redissentinel
       CustomRecipes:
         Setup:
-          - 'redis::default'
+          - 'redis-cluster::default'
         Configure:
-          - 'redis::sentinel'
-################################################################################
-#                           Instance
-################################################################################
+          - 'redis-cluster::sentinel'
+
+
   # myAppInstance1:
   #   Type: 'AWS::OpsWorks::Instance'
   #   Properties:
@@ -126,3 +123,21 @@ Resources:
   #     LayerIds:
   #       - !Ref myLayer
   #     InstanceType: t1.micro
+
+  HostInstance: 
+    Type: "AWS::OpsWorks::Instance"
+    Properties:       
+      StackId: !Ref RedisStack
+      LayerIds: 
+        - Ref: "MasterLayer"
+      InstanceType: "t2.micro"
+      Hostname: "redishost"
+
+  SlaveInstanceA: 
+    Type: "AWS::OpsWorks::Instance"
+    Properties:       
+      StackId: !Ref RedisStack
+      LayerIds: 
+        - Ref: "SlaveLayer"
+      InstanceType: "t2.micro"
+      Hostname: "redisslavea"

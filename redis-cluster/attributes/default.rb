@@ -12,7 +12,7 @@ default[:redis][:server][:timeout]  = "60"
 default[:redis][:saves]             = [["900", "1"], ["300", "10"], ["60", "10000"]]
 
 # Replication
-default[:redis][:ports]             = ["6380", "6381", "6382"]
+default[:redis][:slaves][:port]     = "6379"
 default[:redis][:slave]             = "no"
 default[:redis][:master_server]     = "127.0.0.1"
 default[:redis][:master_port]       = "6379"
