@@ -9,7 +9,7 @@
 
 instance = search("aws_opsworks_instance", "hostname:redishost").first
 node.default[:redis][:master_server] = "#{instance['private_ip']}"
-#port = default[:redis][:slaves][:port]
+port = node.default[:redis][:server][:port]
 
 
 node.default[:redis][:slave] = "yes"
@@ -45,4 +45,7 @@ execute 'redis-server' do
   user 'root'
 end
 
+execute 'redis-slave-add' do
+  command "redis-cli slaveof #{instance['private_ip']} #{port}"
+end
   
