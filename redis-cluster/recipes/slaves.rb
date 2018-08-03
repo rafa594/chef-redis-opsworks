@@ -26,8 +26,8 @@ directory node[:redis][:log_dir] do
 end
 
 directory node[:redis][:data_dir] do
-  owner 'root'
-  group 'root'
+  owner 'redis'
+  group 'redis'
   mode '0755'
   action :create
 end
